@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  background-color: rgb(20, 20, 20);
+  overflow-x: hidden;
+}
+
+.container {
+  padding-left: 44px;
+  padding-right: 44px;
+  padding-top: 100px;
+}
