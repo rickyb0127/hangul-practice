@@ -4,9 +4,11 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 const fs = require('fs');
 const multer = require('multer');
+const path = require('path');
+const uploadPath = path.resolve(__dirname, '../server/public/uploads')
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, './uploads/');
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '.png');
@@ -41,7 +43,7 @@ const client = new vision.ImageAnnotatorClient({
 
 app.post('/api/test', upload, async (req, res) => {
   try {
-    const imagePath = `./uploads/${req.file.fieldname}.png`;
+    const imagePath = `${uploadPath}/${req.file.fieldname}.png`;
     const [result] = await client.textDetection(imagePath);
     const detections = result.textAnnotations;
     console.log(detections)

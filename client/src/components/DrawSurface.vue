@@ -81,7 +81,7 @@ export default {
       const blob = this.dataURItoBlob(dataURL);
 
       try {
-        const url = 'http://localhost:8000/api/test';
+        const url = 'api/test';
         const data = new FormData();
         data.append('fileName', 'test');
         data.append('testImage', blob);
