@@ -1,9 +1,15 @@
 <template>
-  <div class="draw-surface-container">
-    <div>Draw Inside the green box</div>
-    <canvas width="300" height="300" id="canvas" @mousedown="beginDrawing" @mouseup="stopDrawing" @mousemove="keepDrawing"></canvas>
+  <div class="flex-container">
+    <canvas width="800" height="300" id="canvas" @touchstart="beginDrawing" @touchend="stopDrawing" @mousedown="beginDrawing" @mouseup="stopDrawing" @mousemove="keepDrawing"></canvas>
+  </div>
+  <div class="flex-container btn-container">
+    <button @click="textToSpeech">Audio</button>
     <button @click="checkAnswer">Check Answer</button>
     <button @click="clearCanvas">Clear</button>
+  </div>
+  <div v-if="showAnswer" class="flex-container answer-container">
+    Correct Answer: {{ phrase.text }}
+    Translation: {{ phrase.translation }}
   </div>
 </template>
 
@@ -14,12 +20,12 @@ export default {
   name: 'DrawSurface',
   data() {
     return {
-      worker: null,
       canvas: null,
       x: 0,
       y: 0,
       isDrawing: false,
-      client: null
+      phrase: null,
+      showAnswer: false
     }
   },
   methods: {
@@ -91,10 +97,33 @@ export default {
           body: data
         });
 
+        this.showAnswer = true;
+
         return response.json();
       } catch(err) {
         console.log(err);
       }
+    },
+    async fetchNewPhrase() {
+      try {
+        const url = 'api/phrase';
+        const response = await fetch(url, { method: "GET" });
+
+        const json = await response.json();
+        return json;
+      } catch(err) {
+        console.log(err);
+      }
+    },
+    async textToSpeech() {
+      const response = await this.fetchNewPhrase();
+      this.phrase = response.phraseResponse;
+      const synth = window.speechSynthesis;
+      const utterThis = new SpeechSynthesisUtterance(this.phrase.text);
+      utterThis.default = true;
+      utterThis.lang = "ko-KR";
+      utterThis.rate = 0.7;
+      synth.speak(utterThis);
     }
   },
   async mounted() {
@@ -106,19 +135,21 @@ export default {
 </script>
 
 <style scoped>
-.draw-surface-container {
-  width: 400px;
-  height: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  background-color: white;
+.flex-container {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-container {
+  padding-top: 40px;
+}
+
+.answer-container {
+  padding-top: 40px;
+  color: white;
 }
 
 #canvas {
   background-color: green;
-  height: 300px;
-  width: 300px;
-  margin-left: 50px;
-  margin-top: 50px;
 }
 </style>

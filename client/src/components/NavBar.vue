@@ -1,5 +1,8 @@
 <template>
   <div class="navbar" id="navbar">
+    <div class="title">
+      한글 Practice
+    </div>
   </div>
 </template>
 
@@ -22,5 +25,9 @@ export default {
   position: absolute;
   top: 0;
   z-index: 1000;
+}
+
+.title {
+  font-size: 20px;
 }
 </style>

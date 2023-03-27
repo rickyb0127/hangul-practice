@@ -5,7 +5,7 @@ require('dotenv').config();
 const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
-const uploadPath = path.resolve(__dirname, '../server/public/uploads')
+const uploadPath = path.resolve(__dirname, '../server/public/uploads');
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadPath);
@@ -15,6 +15,8 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage }).single('testImage');
+
+const phrases = require('./db');
 
 const app = express();
 app.use(cors());
@@ -44,6 +46,22 @@ const credentials = {
 }
 const client = new vision.ImageAnnotatorClient({
   credentials
+});
+
+app.get('/api/phrase', upload, async (req, res) => {
+  try {
+    const phraseIndex = Math.floor(Math.random()*phrases.length);
+    const phrase = phrases[phraseIndex];
+    const phraseResponse = {
+      ...phrase,
+      phraseIndex
+    }
+
+    res.send({status: 200, phraseResponse});
+  } catch(err) {
+    console.log(err)
+    res.send({status: 400});
+  }
 });
 
 app.post('/api/test', upload, async (req, res) => {
