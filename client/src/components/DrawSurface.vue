@@ -1,15 +1,27 @@
 <template>
   <div class="flex-container">
-    <canvas width="800" height="300" id="canvas" @touchstart="beginDrawing" @touchend="stopDrawing" @mousedown="beginDrawing" @mouseup="stopDrawing" @mousemove="keepDrawing"></canvas>
+    <canvas 
+      width="800" 
+      height="300" 
+      id="canvas" 
+      @touchstart="beginDrawing" 
+      @touchend="stopDrawing" 
+      @touchmove="keepDrawing" 
+      @mousedown="beginDrawing" 
+      @mouseup="stopDrawing" 
+      @mousemove="keepDrawing"
+    ></canvas>
   </div>
   <div class="flex-container btn-container">
     <button @click="textToSpeech">Audio</button>
+    <button @click="fetchNewPhrase">New Phrase</button>
     <button @click="checkAnswer">Check Answer</button>
     <button @click="clearCanvas">Clear</button>
   </div>
   <div v-if="showAnswer" class="flex-container answer-container">
     Correct Answer: {{ phrase.text }}
     Translation: {{ phrase.translation }}
+    Your Answer: {{ userAnswer }}
   </div>
 </template>
 
@@ -25,7 +37,8 @@ export default {
       y: 0,
       isDrawing: false,
       phrase: null,
-      showAnswer: false
+      showAnswer: false,
+      userAnswer: null
     }
   },
   methods: {
@@ -70,7 +83,8 @@ export default {
       this.canvas.stroke(); 
     },
     clearCanvas() {
-      this.canvas.clearRect(0,0, 300, 300);
+      this.canvas.clearRect(0,0, 800, 300);
+      this.userAnswer = null;
     },
     dataURItoBlob(dataURI) {
       const data = dataURI.split(',')[1]; 
@@ -96,10 +110,12 @@ export default {
           method: "POST",
           body: data
         });
-
+        const json = await response.json();
+        const answer = json.answer;
+        this.userAnswer = answer;
         this.showAnswer = true;
 
-        return response.json();
+        return answer;
       } catch(err) {
         console.log(err);
       }
@@ -110,14 +126,14 @@ export default {
         const response = await fetch(url, { method: "GET" });
 
         const json = await response.json();
+        this.clearCanvas();
+        this.showAnswer = false;
         return json;
       } catch(err) {
         console.log(err);
       }
     },
     async textToSpeech() {
-      const response = await this.fetchNewPhrase();
-      this.phrase = response.phraseResponse;
       const synth = window.speechSynthesis;
       const utterThis = new SpeechSynthesisUtterance(this.phrase.text);
       utterThis.default = true;
@@ -130,6 +146,9 @@ export default {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");    
     this.canvas = ctx;
+
+    const response = await this.fetchNewPhrase();
+    this.phrase = response.phraseResponse;
   }
 }
 </script>
